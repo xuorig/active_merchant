@@ -10,6 +10,11 @@ module ActiveMerchant #:nodoc:
       include PaypalExpressCommon
       include PaypalRecurringApi
 
+      class << self
+        attr_accessor :incontext_test_redirect_url
+        attr_accessor :incontext_live_redirect_url
+      end
+
       NON_STANDARD_LOCALE_CODES = {
         'DK' => 'da_DK',
         'IL' => 'he_IL',
@@ -32,6 +37,20 @@ module ActiveMerchant #:nodoc:
       self.supported_countries = ['US']
       self.homepage_url = 'https://www.paypal.com/cgi-bin/webscr?cmd=xpt/merchant/ExpressCheckoutIntro-outside'
       self.display_name = 'PayPal Express Checkout'
+
+      @@incontext_test_redirect_url = 'https://www.sandbox.paypal.com/checkoutnow'
+      @@incontext_live_redirect_url = 'https://www.paypal.com/checkoutnow'
+
+      def incontext_redirect_url
+        test? ? @@incontext_test_redirect_url : @@incontext_live_redirect_url
+      end
+
+      def incontext_redirect_url_for(token, options = {})
+        options = {:review => true}.update(options)
+        url  = "#{incontext_redirect_url}?token=#{token}"
+        url += '&useraction=commit' unless options[:review]
+        url
+      end
 
       def setup_authorization(money, options = {})
         requires!(options, :return_url, :cancel_return_url)

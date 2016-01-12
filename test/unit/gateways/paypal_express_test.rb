@@ -12,6 +12,11 @@ class PaypalExpressTest < Test::Unit::TestCase
   TEST_REDIRECT_URL_MOBILE_WITHOUT_REVIEW = "#{TEST_REDIRECT_URL_MOBILE}&useraction=commit"
   LIVE_REDIRECT_URL_MOBILE_WITHOUT_REVIEW = "#{LIVE_REDIRECT_URL_MOBILE}&useraction=commit"
 
+  INCONTEXT_TEST_REDIRECT_URL = 'https://www.sandbox.paypal.com/checkoutnow?token=1234567890'
+  INCONTEXT_LIVE_REDIRECT_URL = 'https://www.paypal.com/checkoutnow?token=1234567890'
+  INCONTEXT_TEST_REDIRECT_URL_WITHOUT_REVIEW = 'https://www.sandbox.paypal.com/checkoutnow?token=1234567890&useraction=commit'
+  INCONTEXT_LIVE_REDIRECT_URL_WITHOUT_REVIEW = 'https://www.paypal.com/checkoutnow?token=1234567890&useraction=commit'
+
   def setup
     @gateway = PaypalExpressGateway.new(
       :login => 'cody',
@@ -34,6 +39,26 @@ class PaypalExpressTest < Test::Unit::TestCase
 
   def teardown
     Base.mode = :test
+  end
+
+  def test_incontext_live_redirect_url
+    Base.mode = :production
+    assert_equal INCONTEXT_LIVE_REDIRECT_URL, @gateway.incontext_redirect_url_for('1234567890')
+  end
+
+  def test_incontext_live_redirect_url_without_review
+    Base.mode = :production
+    assert_equal INCONTEXT_LIVE_REDIRECT_URL_WITHOUT_REVIEW, @gateway.incontext_redirect_url_for('1234567890', :review => false)
+  end
+
+  def test_incontext_test_redirect_url
+    assert_equal :test, Base.mode
+    assert_equal INCONTEXT_TEST_REDIRECT_URL, @gateway.incontext_redirect_url_for('1234567890')
+  end
+
+  def test_incontext_test_redirect_url_without_review
+    assert_equal :test, Base.mode
+    assert_equal INCONTEXT_TEST_REDIRECT_URL_WITHOUT_REVIEW, @gateway.incontext_redirect_url_for('1234567890', :review => false)
   end
 
   def test_live_redirect_url
